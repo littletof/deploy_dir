@@ -44,7 +44,7 @@ export async function readDirCreateSource(
     if (stat.isDirectory) {
       continue;
     }
-    const name = join(root, relative(dir, path));
+    const name = join(root, relative(dir, path)).replaceAll(/\\/g, '/');
     const type = getMediaType(name);
     const contents = await Deno.readFile(path);
     const base64 = encode(
