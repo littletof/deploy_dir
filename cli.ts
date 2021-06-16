@@ -17,6 +17,7 @@ Options:
   -o, --output <filename>     Specifies the output filename. If not specified, the tool shows the source code to stdout.
   --js                        Output source code as plain JavaScript. Default is false.
   --basic-auth <id:pw>        Performs basic authentication in the deployed site. The credentials are in the form of <user>:<password>
+  -e, --extend                Specifies the path to a handler, which handles requests which didn't match a static asset
   -y, --yes                   Answers yes when the tool ask for overwriting the output.
   -v, --version               Shows the version number.
   -h, --help                  Shows the help message.
@@ -36,6 +37,7 @@ type CliArgs = {
   output: string;
   js: boolean;
   "basic-auth": string;
+  extend: string;
   yes: boolean;
 };
 
@@ -47,17 +49,19 @@ export async function main(cliArgs: string[]) {
     output,
     js,
     "basic-auth": basicAuth,
+    extend,
     yes,
     _: args,
   } = parse(cliArgs, {
     boolean: ["help", "version", "js", "yes"],
-    string: ["root", "output", "basic-auth"],
+    string: ["root", "output", "basic-auth", "extend"],
     alias: {
       h: "help",
       v: "version",
       o: "output",
       r: "root",
       y: "yes",
+      e: "extend"
     },
   }) as CliArgs;
 
@@ -82,6 +86,7 @@ export async function main(cliArgs: string[]) {
   const source = await readDirCreateSource(dir, root, {
     toJavaScript: js,
     basicAuth,
+    extend
   });
   if (!output) {
     console.log(source);

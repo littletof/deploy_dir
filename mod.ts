@@ -14,6 +14,7 @@ export async function readDirCreateSource(
     toJavaScript?: boolean;
     basicAuth?: string;
     gzipTimestamp?: number;
+    extend?: string;
   } = {},
 ): Promise<string> {
   const buf: string[] = [];
@@ -65,6 +66,13 @@ export async function readDirCreateSource(
       `dirData[${JSON.stringify(name)}] = [decode("${base64}"), "${type}"];`,
     );
   }
+
+  if(opts.extend) {
+    buf.push(`// Extension handler from ${opts.extend}`);
+    buf.push(Deno.readTextFileSync(opts.extend));
+    buf.push(`//Extension end\n`);
+  }
+
   buf.push('addEventListener("fetch", (e) => {');
   if (opts.basicAuth) {
     const [user, password] = opts.basicAuth.split(":");
@@ -105,7 +113,9 @@ export async function readDirCreateSource(
     }
     return;
   }
-  e.respondWith(new Response("404 Not Found", { status: 404 }));
+  ${
+    opts.extend ? 'handleRequest(e, dirData);' : `e.respondWith(new Response("404 Not Found", { status: 404 }));`
+  }
 });`);
 
   return buf.join("\n");
